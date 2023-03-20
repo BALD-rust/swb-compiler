@@ -24,7 +24,7 @@ pub enum Instruction {
 
 impl Instruction {
     fn discriminant(&self) -> u8 {
-        // SAFETY: Because we are using repr(u8) this enum is a repr(C) union type.
+        // SAFETY: Because we are using repr(u8) this enum is a repr(C) tagged union type.
         // We can read the discriminant in the first u8 field of this struct.
         // see https://doc.rust-lang.org/std/mem/fn.discriminant.html#accessing-the-numeric-value-of-the-discriminant
         unsafe { *<*const _>::from(self).cast::<u8>() }

@@ -1,3 +1,5 @@
+use std::fs::File;
+use std::io::Write;
 use std::path::Path;
 use flat_html::{Element, FlatHtml};
 use swb_compiler::compile;
@@ -24,11 +26,8 @@ fn strip(next: &Element, it: &mut ElementIter) -> Option<Vec<Element>> {
         );
     }
 
-
-    // Leave IgnoreTag alone
+    // Leave IgnoreTag alone, this is only used while stripping
     less_html::keep_unit_element!(IgnoreTag, next);
-    // Leave text alone
-    less_html::keep_element!(Text, next);
     // Leave EndTag alone
     less_html::keep_element!(EndTag, next);
     // Leave regular tags alone
@@ -53,10 +52,9 @@ fn strip_page(input: &Path) -> Result<FlatHtml> {
 }
 
 fn main() -> Result<()> {
-    let input = strip_page(Path::new("examples/example.html"))?;
+    let input = strip_page(Path::new("examples/monads.html"))?;
     let output = compile(&input)?;
-    // print!("{}", output);
-    let binary = output.binary();
-    print!("{}", binary.instructions);
+    let mut file = File::create("output.swb")?;
+    write!(file, "{}", &output)?;
     Ok(())
 }

@@ -5,15 +5,18 @@ use flat_html::{Element, TagKind};
 use crate::address::{Address, AddressRange};
 use crate::instruction::{BinaryInstruction, BinaryProgram, Instruction, StyleVar, ToBinary};
 
+use ascii::{AsAsciiStr, AsciiString, FromAsciiError, IntoAsciiString};
+use ascii::AsciiChar::l;
+
 #[derive(Debug)]
 pub struct CompilationOutput {
-    pub text_buf: String,
+    pub text_buf: AsciiString,
     pub instructions: Vec<Instruction>
 }
 
 #[derive(Debug)]
 pub struct CompiledBinary {
-    pub text_buf: String,
+    pub text_buf: AsciiString,
     pub instructions: BinaryProgram,
 }
 
@@ -27,7 +30,7 @@ impl CompiledBinary {
         // We know how many more bytes we need, so this saves some allocations.
         result.reserve((len as usize + self.instructions.instructions.len() * std::mem::size_of::<BinaryInstruction>()) as usize);
         // Add string buffer
-        result.append(&mut self.text_buf.into_bytes());
+        result.extend_from_slice(self.text_buf.as_bytes());
         // Now add our binary instructions
         for instr in self.instructions.instructions {
             let bytes = instr.into_bytes();
@@ -56,7 +59,7 @@ impl CompilationOutput {
 /// Compiles a flat, possibly reduced HTML representation to SWB
 pub fn compile(input: &flat_html::FlatHtml) -> Result<CompilationOutput> {
     let mut output = CompilationOutput {
-        text_buf: String::new(),
+        text_buf: AsciiString::new(),
         instructions: vec![],
     };
 
@@ -67,7 +70,8 @@ pub fn compile(input: &flat_html::FlatHtml) -> Result<CompilationOutput> {
             }
             Element::Text(data) => {
                 let start = output.text_buf.len();
-                output.text_buf += data;
+                let ascii: String = data.chars().filter(|c| c.is_ascii()).collect();
+                output.text_buf += &ascii.into_ascii_string().unwrap();
                 Some(
                     Instruction::Text(
                         AddressRange {
@@ -108,7 +112,12 @@ impl Display for CompilationOutput {
         while cur < self.text_buf.len() {
             // Grab at most 16 characters, but never more than the amount of remaining characters
             let remaining = (self.text_buf.len() - cur).min(BLOCK_SIZE);
-            let block = self.text_buf.get(cur..(cur + remaining)).unwrap();
+            if remaining == 0 { break; }
+            let block = self.text_buf.as_slice().get(cur..(cur + remaining)).unwrap();
+            let block = unsafe {
+                // SAFETY: This slice was created from an AsciiString, so we know there are no ascii characters.
+                block.as_ascii_str_unchecked()
+            };
             write!(f, "\t{:#06x}\t{}\n", cur, block)?;
             cur += remaining;
         }
