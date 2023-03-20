@@ -1,22 +1,116 @@
+use std::any::Any;
 use std::fmt::{Display, Formatter};
 use flat_html::TagKind;
 use crate::address::AddressRange;
 
 use anyhow::{anyhow, Result};
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
+#[repr(u8)]
 pub enum StyleVar {
-    Bold,
-    Italic,
+    Bold = 1,
+    Italic = 2,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
+#[repr(u8)]
 pub enum Instruction {
-    Text(AddressRange),
-    Push(StyleVar),
-    Pop(StyleVar),
-    Endl,
-    Stop,
+    Stop = 0,
+    Text(AddressRange) = 1,
+    Push(StyleVar) = 2,
+    Pop(StyleVar) = 3,
+    Endl = 4,
+}
+
+impl Instruction {
+    fn discriminant(&self) -> u8 {
+        // SAFETY: Because we are using repr(u8) this enum is a repr(C) union type.
+        // We can read the discriminant in the first u8 field of this struct.
+        // see https://doc.rust-lang.org/std/mem/fn.discriminant.html#accessing-the-numeric-value-of-the-discriminant
+        unsafe { *<*const _>::from(self).cast::<u8>() }
+    }
+}
+
+/// - Text: lower 32 bits of the argument are the base address, upper 32 bits are the offset
+/// - Push/Pop: lower 8 bits of the argument are the style var, upper 48 bits are zero.
+#[derive(Copy, Clone, Debug)]
+#[repr(C)]
+pub struct BinaryInstruction {
+    pub ty: u8,
+    pub arg: u64,
+}
+
+#[derive(Debug, Clone)]
+pub struct BinaryProgram {
+    pub instructions: Vec<BinaryInstruction>,
+}
+
+impl BinaryInstruction {
+    pub fn into_bytes(self) -> [u8; 9] {
+        let mut result: [u8; 9] = [self.ty, 0, 0, 0, 0, 0, 0, 0, 0];
+        result[1..].copy_from_slice(&self.arg.to_le_bytes());
+        result
+    }
+}
+
+pub trait ToBinary {
+    type Output;
+    fn to_binary(&self) -> Self::Output;
+}
+
+impl ToBinary for StyleVar {
+    type Output = u8;
+
+    fn to_binary(&self) -> Self::Output {
+        *self as Self::Output
+    }
+}
+
+fn pack_u32_into_u64(lower: u32, upper: u32) -> u64 {
+    lower as u64 | ((upper as u64) << 32)
+}
+
+impl ToBinary for Instruction {
+    type Output = BinaryInstruction;
+
+    fn to_binary(&self) -> Self::Output {
+        let ty = self.discriminant();
+        match self {
+            Instruction::Text(AddressRange { base, range }) => {
+                let arg = pack_u32_into_u64(base.0, *range);
+                BinaryInstruction {
+                    ty,
+                    arg,
+                }
+            },
+            Instruction::Push(style) => {
+                let arg = *style as u8 as u64;
+                BinaryInstruction {
+                    ty,
+                    arg,
+                }
+            }
+            Instruction::Pop(style) => {
+                let arg = *style as u8 as u64;
+                BinaryInstruction {
+                    ty,
+                    arg,
+                }
+            }
+            Instruction::Endl => {
+                BinaryInstruction {
+                    ty,
+                    arg: 0
+                }
+            }
+            Instruction::Stop => {
+                BinaryInstruction {
+                    ty,
+                    arg: 0
+                }
+            }
+        }
+    }
 }
 
 impl TryFrom<TagKind> for StyleVar {
@@ -61,6 +155,21 @@ impl Display for Instruction {
             }
         };
 
+        Ok(())
+    }
+}
+
+impl Display for BinaryInstruction {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:#0x}:{:#16x}", self.ty, self.arg)
+    }
+}
+
+impl Display for BinaryProgram {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        for instruction in &self.instructions {
+            write!(f, "{instruction}\n")?;
+        }
         Ok(())
     }
 }

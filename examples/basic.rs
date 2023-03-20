@@ -55,6 +55,8 @@ fn strip_page(input: &Path) -> Result<FlatHtml> {
 fn main() -> Result<()> {
     let input = strip_page(Path::new("examples/example.html"))?;
     let output = compile(&input)?;
-    print!("{}", output);
+    // print!("{}", output);
+    let binary = output.binary();
+    print!("{}", binary.instructions);
     Ok(())
 }

@@ -3,12 +3,54 @@ use std::fmt::{Display, Formatter};
 use anyhow::{anyhow, Error, Result};
 use flat_html::{Element, TagKind};
 use crate::address::{Address, AddressRange};
-use crate::instruction::{Instruction, StyleVar};
+use crate::instruction::{BinaryInstruction, BinaryProgram, Instruction, StyleVar, ToBinary};
 
 #[derive(Debug)]
 pub struct CompilationOutput {
     pub text_buf: String,
     pub instructions: Vec<Instruction>
+}
+
+#[derive(Debug)]
+pub struct CompiledBinary {
+    pub text_buf: String,
+    pub instructions: BinaryProgram,
+}
+
+impl CompiledBinary {
+    /// Returns a byte buffer with the resulting binary
+    /// The first 8 bytes of the buffer contain the length of the data section in bytes.
+    pub fn into_byte_buffer(mut self) -> Vec<u8> {
+        let len = self.text_buf.len() as u64;
+        let header_bytes: [u8; 8] = len.to_le_bytes();
+        let mut result = header_bytes.to_vec();
+        // We know how many more bytes we need, so this saves some allocations.
+        result.reserve((len as usize + self.instructions.instructions.len() * std::mem::size_of::<BinaryInstruction>()) as usize);
+        // Add string buffer
+        result.append(&mut self.text_buf.into_bytes());
+        // Now add our binary instructions
+        for instr in self.instructions.instructions {
+            let bytes = instr.into_bytes();
+            result.extend_from_slice(&bytes);
+        }
+        result
+    }
+}
+
+impl CompilationOutput {
+    pub fn binary(self) -> CompiledBinary {
+        CompiledBinary {
+            text_buf: self.text_buf,
+            instructions: BinaryProgram {
+                instructions: self.instructions
+                    .into_iter()
+                    .map(|instruction|
+                        instruction.to_binary()
+                    )
+                    .collect(),
+            }
+        }
+    }
 }
 
 /// Compiles a flat, possibly reduced HTML representation to SWB
@@ -30,7 +72,7 @@ pub fn compile(input: &flat_html::FlatHtml) -> Result<CompilationOutput> {
                     Instruction::Text(
                         AddressRange {
                             base: Address(start as u32),
-                            range: data.len()
+                            range: data.len() as u32
                         }
                     )
                 )

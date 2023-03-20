@@ -1,12 +1,12 @@
 use std::fmt::{Display, Formatter};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Address(pub u32);
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct AddressRange {
     pub base: Address,
-    pub range: usize,
+    pub range: u32,
 }
 
 impl Address {
