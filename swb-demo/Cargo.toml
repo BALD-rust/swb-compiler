@@ -20,8 +20,8 @@ log = "0.4.17"
 env_logger = "0.10.0"
 
 swb-compiler = { path = "../../swb-compiler" }
-less-html = { path = "../../less-html" }
-flat-html = { path = "../../flat-html" }
+flat-html = { git = "https://github.com/BALD-rust/flat-html" }
+less-html = { git = "https://github.com/BALD-rust/less-html" }
 
 [features]
 simulator = [
