@@ -1,0 +1,9 @@
+[package]
+name = "swb-compiler"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.70"
+flat-html = { path = "../flat-html" }
+less-html = { path = "../less-html" }
