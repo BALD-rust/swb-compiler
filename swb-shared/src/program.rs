@@ -4,6 +4,11 @@ use core::fmt;
 use std::fmt;
 
 #[cfg(not(feature = "std"))]
+use core::mem;
+#[cfg(feature = "std")]
+use std::mem;
+
+#[cfg(not(feature = "std"))]
 use core::convert::TryInto;
 #[cfg(feature = "std")]
 use std::convert::TryInto;
@@ -69,7 +74,7 @@ impl BinaryProgram {
         let mut result = header_bytes.to_vec();
         // We know how many more bytes we need, so this saves some allocations.
         result.reserve(
-            (len as usize + self.code.len() * std::mem::size_of::<BinaryInstruction>()) as usize,
+            (len as usize + self.code.len() * mem::size_of::<BinaryInstruction>()) as usize,
         );
         // Add string buffer
         result.extend_from_slice(self.text.as_bytes());
