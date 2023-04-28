@@ -1,12 +1,12 @@
-#[cfg(std)]
+#[cfg(feature="std")]
 use std::fmt;
-#[cfg(not(std))]
+#[cfg(not(feature="std"))]
 use core::fmt;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub struct Address(pub u32);
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub struct AddressRange {
     pub base: Address,
     pub range: u32,
