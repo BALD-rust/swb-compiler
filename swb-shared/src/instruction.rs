@@ -8,10 +8,8 @@ use std::convert::TryInto;
 #[cfg(not(feature="std"))]
 use core::convert::TryInto;
 
-use alloc::vec::Vec;
-
 use crate::address::AddressRange;
-use anyhow::{anyhow, Result};
+use crate::Result;
 use crate::Address;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -58,11 +56,11 @@ impl BinaryInstruction {
 }
 
 impl TryFrom<[u8; 9]> for BinaryInstruction {
-    type Error = anyhow::Error;
+    type Error = crate::Error;
 
     fn try_from(value: [u8; 9]) -> Result<Self> {
         let ty = value[0];
-        let arg = u64::from_le_bytes(value[1..].try_into()?);
+        let arg = u64::from_le_bytes(value[1..].try_into().unwrap());
         Ok(Self {
             ty,
             arg,
@@ -105,12 +103,12 @@ fn parse_style_var(value: u64) -> Result<StyleVar> {
     match value {
         1 => Ok(StyleVar::Bold),
         2 => Ok(StyleVar::Italic),
-        _ => Err(anyhow!("Invalid style var encoding {value}"))
+        _ => Err(crate::Error("Invalid style var encoding"))
     }
 }
 
 impl TryFrom<BinaryInstruction> for Instruction {
-    type Error = anyhow::Error;
+    type Error = crate::Error;
 
     fn try_from(value: BinaryInstruction) -> Result<Self> {
         let instruction = match value.ty {
@@ -119,7 +117,7 @@ impl TryFrom<BinaryInstruction> for Instruction {
             2 => Ok(Instruction::Push(parse_style_var(value.arg)?)),
             3 => Ok(Instruction::Pop(parse_style_var(value.arg)?)),
             4 => Ok(Instruction::Endl),
-            _ => Err(anyhow!("Invalid instruction type {}", value.ty)),
+            _ => Err(crate::Error("Invalid instruction type")),
         }?;
         Ok(instruction)
     }

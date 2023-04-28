@@ -12,9 +12,7 @@ use crate::{BinaryInstruction, Instruction, ToBinary};
 use alloc::vec::Vec;
 use ascii::{AsAsciiStr, AsciiString, IntoAsciiString};
 
-use anyhow::Result;
-use anyhow::Result::Ok;
-use anyhow::Result::Err;
+use crate::Result;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Program {
@@ -29,15 +27,15 @@ pub struct BinaryProgram {
 }
 
 impl TryFrom<&[u8]> for Program {
-    type Error = anyhow::Error;
+    type Error = crate::Error;
 
     fn try_from(value: &[u8]) -> Result<Self> {
         let header = &value[0..8];
-        let text_len = u64::from_le_bytes(header.try_into()?) as usize;
+        let text_len = u64::from_le_bytes(header.try_into().unwrap()) as usize;
         let text_bytes = &value[8..8 + text_len];
         let mut vec = Vec::with_capacity(text_bytes.len());
         vec.extend_from_slice(text_bytes);
-        let text = vec.into_ascii_string()?;
+        let text = vec.into_ascii_string().unwrap();
         let instruction_bytes = &value[8 + text_len..];
         let code = instruction_bytes
             .chunks_exact(9)
