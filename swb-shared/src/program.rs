@@ -10,7 +10,7 @@ use std::convert::TryInto;
 
 use crate::{BinaryInstruction, Instruction, ToBinary};
 use alloc::vec::Vec;
-use ascii::{AsciiString, IntoAsciiString};
+use ascii::{AsAsciiStr, AsciiString, IntoAsciiString};
 
 use anyhow::Result;
 
@@ -81,6 +81,7 @@ impl BinaryProgram {
         result
     }
 }
+
 impl fmt::Display for BinaryProgram {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for instruction in &self.code {
@@ -89,6 +90,37 @@ impl fmt::Display for BinaryProgram {
         Ok(())
     }
 }
+
+impl fmt::Display for Program {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        const BLOCK_SIZE: usize = 16;
+        write!(f, ".data\n")?;
+        // Display our text buffer, we do this in blocks of at most 16 characters
+        let mut cur = 0;
+        while cur < self.text.len() {
+            // Grab at most 16 characters, but never more than the amount of remaining characters
+            let remaining = (self.text.len() - cur).min(BLOCK_SIZE);
+            if remaining == 0 {
+                break;
+            }
+            let block = self.text.as_slice().get(cur..(cur + remaining)).unwrap();
+            let block = unsafe {
+                // SAFETY: This slice was created from an AsciiString, so we know there are no non-ascii characters.
+                block.as_ascii_str_unchecked()
+            };
+            write!(f, "\t{:#06x}\t{}\n", cur, block)?;
+            cur += remaining;
+        }
+
+        write!(f, ".text\n")?;
+        for instruction in &self.code {
+            write!(f, "\t{instruction}\n")?;
+        }
+
+        Ok(())
+    }
+}
+
 
 #[cfg(test)]
 mod tests {

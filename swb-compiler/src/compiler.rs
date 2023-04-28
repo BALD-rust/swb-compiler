@@ -80,31 +80,7 @@ pub fn compile(input: &flat_html::FlatHtml) -> Result<CompilationOutput> {
 }
 
 impl Display for CompilationOutput {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        const BLOCK_SIZE: usize = 16;
-        write!(f, ".data\n")?;
-        // Display our text buffer, we do this in blocks of at most 16 characters
-        let mut cur = 0;
-        while cur < self.0.text.len() {
-            // Grab at most 16 characters, but never more than the amount of remaining characters
-            let remaining = (self.0.text.len() - cur).min(BLOCK_SIZE);
-            if remaining == 0 {
-                break;
-            }
-            let block = self.0.text.as_slice().get(cur..(cur + remaining)).unwrap();
-            let block = unsafe {
-                // SAFETY: This slice was created from an AsciiString, so we know there are no ascii characters.
-                block.as_ascii_str_unchecked()
-            };
-            write!(f, "\t{:#06x}\t{}\n", cur, block)?;
-            cur += remaining;
-        }
-
-        write!(f, ".text\n")?;
-        for instruction in &self.0.code {
-            write!(f, "\t{instruction}\n")?;
-        }
-
-        Ok(())
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
