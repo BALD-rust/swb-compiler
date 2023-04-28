@@ -1,0 +1,10 @@
+[package]
+name = "swb-shared"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = { version = "1.0.70", default-features = false }
+
+[features]
+no-std = []

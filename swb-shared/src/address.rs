@@ -1,4 +1,7 @@
-use std::fmt::{Display, Formatter};
+#[cfg(std)]
+use std::fmt;
+#[cfg(not(std))]
+use core::fmt;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Address(pub u32);
@@ -17,14 +20,14 @@ impl Address {
     }
 }
 
-impl Display for Address {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for Address {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:#06x}", self.0)
     }
 }
 
-impl Display for AddressRange {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for AddressRange {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let end = self.base.offset((self.range - 1) as i32);
         write!(f, "{}..{}", self.base, end)
     }

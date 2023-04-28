@@ -8,13 +8,12 @@ edition = "2021"
 toekomst = { git = "https://github.com/BALD-rust/toekomst" }
 embassy-executor = { git = "https://github.com/embassy-rs/embassy/", rev = "b05cd77", features = ["nightly", "integrated-timers"] }
 embassy-futures = { git = "https://github.com/embassy-rs/embassy/", rev = "b05cd77" }
-
 embedded-graphics = "0.7.1"
 embedded-graphics-simulator = { version = "0.4.0" }
 log = "0.4.17"
 env_logger = "0.10.0"
 
-swb-compiler = { path = "../../swb-compiler" }
+swb-compiler = { path = "../swb-compiler" }
 flat-html = { git = "https://github.com/BALD-rust/flat-html" }
 less-html = { git = "https://github.com/BALD-rust/less-html" }
 

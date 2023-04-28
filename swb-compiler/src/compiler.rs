@@ -2,11 +2,16 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use anyhow::{anyhow, Error, Result};
 use flat_html::{Element, TagKind};
-use crate::address::{Address, AddressRange};
-use crate::instruction::{BinaryInstruction, BinaryProgram, Instruction, StyleVar, ToBinary};
-
 use ascii::{AsAsciiStr, AsciiString, FromAsciiError, IntoAsciiString};
-use ascii::AsciiChar::l;
+use swb_shared::{Address, AddressRange, BinaryInstruction, BinaryProgram, Instruction, StyleVar, ToBinary};
+
+fn stylevar_from_tag(tag: TagKind) -> Result<StyleVar> {
+    match tag {
+        TagKind::Bold => { Ok(StyleVar::Bold) }
+        TagKind::Italic => { Ok(StyleVar::Italic) }
+        _ => { Err(anyhow!("could not parse tag into stylevar")) }
+    }
+}
 
 #[derive(Debug)]
 pub struct CompilationOutput {
@@ -83,13 +88,13 @@ pub fn compile(input: &flat_html::FlatHtml) -> Result<CompilationOutput> {
             }
             Element::Tag(kind) => {
                 // Try to parse this tag into a style var, and if so add a push instruction
-                match StyleVar::try_from(kind.clone()) {
+                match stylevar_from_tag(kind.clone()) {
                     Ok(value) => { Some(Instruction::Push(value)) }
                     Err(_) => { None }
                 }
             }
             Element::EndTag(kind) => {
-                match StyleVar::try_from(kind.clone()) {
+                match stylevar_from_tag(kind.clone()) {
                     Ok(value) => { Some(Instruction::Pop(value)) }
                     Err(_) => { None }
                 }

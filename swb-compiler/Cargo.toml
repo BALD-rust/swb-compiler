@@ -1,0 +1,11 @@
+[package]
+name = "swb-compiler"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.70"
+ascii = "1.1.0"
+flat-html = { git = "https://github.com/BALD-rust/flat-html" }
+less-html = { git = "https://github.com/BALD-rust/less-html" }
+swb-shared = { path = "../swb-shared" }

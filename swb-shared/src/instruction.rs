@@ -1,8 +1,11 @@
-use std::any::Any;
-use std::fmt::{Display, Formatter};
-use flat_html::TagKind;
-use crate::address::AddressRange;
+#[cfg(std)]
+use std::fmt;
+#[cfg(not(std))]
+use core::fmt;
 
+use alloc::vec::Vec;
+
+use crate::address::AddressRange;
 use anyhow::{anyhow, Result};
 
 #[derive(Debug, Copy, Clone)]
@@ -31,8 +34,8 @@ impl Instruction {
     }
 }
 
-/// - Text: lower 32 bits of the argument are the base address, upper 32 bits are the offset
-/// - Push/Pop: lower 8 bits of the argument are the style var, upper 48 bits are zero.
+/// - Text: lower 32 bits of the argument are the base address, upper 32 bits are the range
+/// - Push/Pop: lower 8 bits of the argument are the style var, upper 56 bits are zero.
 #[derive(Copy, Clone, Debug)]
 #[repr(C)]
 pub struct BinaryInstruction {
@@ -113,20 +116,8 @@ impl ToBinary for Instruction {
     }
 }
 
-impl TryFrom<TagKind> for StyleVar {
-    type Error = anyhow::Error;
-
-    fn try_from(value: TagKind) -> Result<Self> {
-        match value {
-            TagKind::Bold => { Ok(StyleVar::Bold) }
-            TagKind::Italic => { Ok(StyleVar::Italic) }
-            _ => { Err(anyhow!("could not parse tag into stylevar")) }
-        }
-    }
-}
-
-impl Display for StyleVar {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for StyleVar {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             StyleVar::Bold => { write!(f, "bold")?; }
             StyleVar::Italic => { write!(f, "italic")?; }
@@ -135,8 +126,8 @@ impl Display for StyleVar {
     }
 }
 
-impl Display for Instruction {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for Instruction {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Instruction::Text(range) => {
                 write!(f, "text {range}")?;
@@ -159,14 +150,14 @@ impl Display for Instruction {
     }
 }
 
-impl Display for BinaryInstruction {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for BinaryInstruction {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:#0x}:{:#16x}", self.ty, self.arg)
     }
 }
 
-impl Display for BinaryProgram {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for BinaryProgram {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for instruction in &self.instructions {
             write!(f, "{instruction}\n")?;
         }

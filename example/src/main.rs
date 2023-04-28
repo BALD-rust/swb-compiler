@@ -1,12 +1,12 @@
+use flat_html::{Element, FlatHtml};
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
-use flat_html::{Element, FlatHtml};
 use swb_compiler::compile;
 
 use anyhow::Result;
-use less_html::Document;
 use less_html::strip::ElementIter;
+use less_html::Document;
 
 fn strip(next: &Element, it: &mut ElementIter) -> Option<Vec<Element>> {
     // We split our text on newlines, and delete any lines that are only whitespace
@@ -14,15 +14,15 @@ fn strip(next: &Element, it: &mut ElementIter) -> Option<Vec<Element>> {
         // Otherwise, we will split our text on newlines
         return Some(
             str.split_terminator('\n')
-            .flat_map(|line| {
-                if line.chars().all(|c| c.is_whitespace()) {
-                    None
-                } else {
-                    // Trim leading and trailing whitespace
-                    Some(Element::Text(line.trim().to_string()))
-                }
-            })
-            .collect()
+                .flat_map(|line| {
+                    if line.chars().all(|c| c.is_whitespace()) {
+                        None
+                    } else {
+                        // Trim leading and trailing whitespace
+                        Some(Element::Text(line.trim().to_string()))
+                    }
+                })
+                .collect(),
         );
     }
 
@@ -36,11 +36,15 @@ fn strip(next: &Element, it: &mut ElementIter) -> Option<Vec<Element>> {
     match next {
         Element::LineBreak => {
             // Collapse all subsequent linebreaks into one.
-            while let Some(Element::LineBreak) = it.peek() { let _ = it.next(); }
+            while let Some(Element::LineBreak) = it.peek() {
+                let _ = it.next();
+            }
             return Some(vec![Element::LineBreak]);
         }
         // All other cases were already handled
-        _ => { unreachable!() }
+        _ => {
+            unreachable!()
+        }
     };
 }
 
@@ -52,9 +56,10 @@ fn strip_page(input: &Path) -> Result<FlatHtml> {
 }
 
 fn main() -> Result<()> {
-    let input = strip_page(Path::new("examples/monads.html"))?;
+    let input = strip_page(Path::new("example.html"))?;
     let output = compile(&input)?;
-    let mut file = File::create("output.swb")?;
-    write!(file, "{}", &output)?;
+    let mut file = File::create("../swb-compiler/output.swb")?;
+    let binary = output.binary().into_byte_buffer();
+    file.write(binary.as_slice())?;
     Ok(())
 }
