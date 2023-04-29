@@ -11,9 +11,9 @@ use less_html::Document;
 fn strip(next: &Element, it: &mut ElementIter) -> Option<Vec<Element>> {
     // We split our text on newlines, and delete any lines that are only whitespace
     if let Element::Text(str) = next {
-        // Otherwise, we will split our text on newlines
-        return Some(
-            str.split_terminator('\n')
+        
+
+        return Some(str.split_terminator('\n')
                 .flat_map(|line| {
                     if line.chars().all(|c| c.is_whitespace()) {
                         None
@@ -21,6 +21,15 @@ fn strip(next: &Element, it: &mut ElementIter) -> Option<Vec<Element>> {
                         // Trim leading and trailing whitespace
                         Some(Element::Text(line.trim().to_string()))
                     }
+                })
+                .flat_map(|txt| {
+                    let Element::Text(str) = txt else { unreachable!() };
+                    str
+                        .chars()
+                        .collect::<Vec<char>>()
+                        .chunks(50)
+                        .map(|s| Element::Text(s.iter().collect::<String>()))
+                        .collect::<Vec<_>>()
                 })
                 .collect(),
         );
