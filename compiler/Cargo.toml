@@ -1,11 +1,10 @@
 [package]
-name = "swb-compiler"
+name = "swb"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = "1.0.70"
-ascii = "1.1.0"
+swb-compiler = { path = "../swb-compiler" }
 flat-html = { git = "ssh://github.com/BALD-rust/flat-html.git" }
 less-html = { git = "ssh://github.com/BALD-rust/less-html.git" }
-swb-shared = { path = "../swb-shared" }
+anyhow = "1.0.70"

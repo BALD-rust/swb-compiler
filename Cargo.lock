@@ -539,16 +539,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "example"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "flat-html",
- "less-html",
- "swb-compiler",
-]
-
-[[package]]
 name = "fixed"
 version = "1.23.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -563,7 +553,7 @@ dependencies = [
 [[package]]
 name = "flat-html"
 version = "0.1.0"
-source = "git+https://github.com/BALD-rust/flat-html#9f13199e7cea8517c720f2b75639de29a7f14050"
+source = "git+ssh://github.com/BALD-rust/flat-html.git#9f13199e7cea8517c720f2b75639de29a7f14050"
 dependencies = [
  "anyhow",
 ]
@@ -814,7 +804,7 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 [[package]]
 name = "less-html"
 version = "0.1.0"
-source = "git+https://github.com/BALD-rust/less-html#a37f9d6ae86bee95f8a8a9965ff5ded0eee69059"
+source = "git+ssh://github.com/BALD-rust/less-html.git#a37f9d6ae86bee95f8a8a9965ff5ded0eee69059"
 dependencies = [
  "anyhow",
  "flat-html",
@@ -829,9 +819,9 @@ checksum = "6a987beff54b60ffa6d51982e1aa1146bc42f19bd26be28b0586f252fccf5317"
 
 [[package]]
 name = "linux-raw-sys"
-version = "0.3.5"
+version = "0.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2e8776872cdc2f073ccaab02e336fa321328c1e02646ebcb9d2108d0baab480d"
+checksum = "b64f40e5e03e0d54f03845c8197d0291253cdbedfb1cb46b13c2c117554a9f4c"
 
 [[package]]
 name = "lock_api"
@@ -1408,9 +1398,9 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "0.37.15"
+version = "0.37.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a0661814f891c57c930a610266415528da53c4933e6dea5fb350cbfe048a9ece"
+checksum = "bc809f704c03a812ac71f22456c857be34185cac691a4316f27ab0f633bb9009"
 dependencies = [
  "bitflags",
  "errno",
@@ -1602,6 +1592,12 @@ dependencies = [
 [[package]]
 name = "swb"
 version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "flat-html",
+ "less-html",
+ "swb-compiler",
+]
 
 [[package]]
 name = "swb-compiler"
@@ -1635,6 +1631,16 @@ name = "swb-shared"
 version = "0.1.0"
 dependencies = [
  "ascii",
+]
+
+[[package]]
+name = "swb-tools"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "flat-html",
+ "less-html",
+ "swb-compiler",
 ]
 
 [[package]]
@@ -1688,7 +1694,7 @@ dependencies = [
 [[package]]
 name = "toekomst"
 version = "0.1.0"
-source = "git+https://github.com/BALD-rust/toekomst#f2160cff315ab62572ce6da2d38063c49afcdf4a"
+source = "git+ssh://github.com/BALD-rust/toekomst.git#9dfbebd6ff3bb52cce7f3afa44f883bf8c4b24af"
 dependencies = [
  "announcement",
  "embassy-executor",

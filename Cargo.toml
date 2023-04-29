@@ -1,5 +1,5 @@
 [package]
-name = "swb"
+name = "swb-tools"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,9 +8,15 @@ members = [
     "./swb-shared",
     "./swb-demo",
     "./swb-compiler",
-    "./example"
+    "./compiler"
 ]
 
+[dependencies]
+swb-compiler = { path = "swb-compiler" }
+flat-html = { git = "ssh://github.com/BALD-rust/flat-html.git" }
+less-html = { git = "ssh://github.com/BALD-rust/less-html.git" }
+anyhow = "1.0.70"
+
 [[bin]]
-name = "example"
-path = "example/src/main.rs"
+name = "swb"
+path = "compiler/src/main.rs"

@@ -38,7 +38,7 @@ impl TryFrom<&[u8]> for Program {
         let header = &value[0..8];
         let text_len = u64::from_le_bytes(header.try_into().unwrap()) as usize;
         let text_bytes = &value[8..8 + text_len];
-        let mut vec = Vec::with_capacity(text_bytes.len());
+        let mut vec = Vec::with_capacity(text_len);
         vec.extend_from_slice(text_bytes);
         let text = vec.into_ascii_string().unwrap();
         let instruction_bytes = &value[8 + text_len..];

@@ -56,9 +56,16 @@ fn strip_page(input: &Path) -> Result<FlatHtml> {
 }
 
 fn main() -> Result<()> {
-    let input = strip_page(Path::new("example.html"))?;
+    let args = std::env::args().collect::<Vec<_>>();
+    if args.len() != 2 {
+        println!("usage: swb [input]");
+        std::process::exit(1);
+    }
+    let path = Path::new(&args[1]);
+    let input = strip_page(path)?;
     let output = compile(&input)?;
-    let mut file = File::create("../swb-compiler/output.swb")?;
+    let out_path = path.with_extension("swb");
+    let mut file = File::create(&out_path)?;
     let binary = output.binary().into_byte_buffer();
     file.write(binary.as_slice())?;
     Ok(())
