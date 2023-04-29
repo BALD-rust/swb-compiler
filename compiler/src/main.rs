@@ -1,4 +1,4 @@
-use flat_html::{Element, FlatHtml};
+use flat_html::{Element, FlatHtml, TagKind};
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
@@ -24,7 +24,18 @@ fn strip(next: &Element, it: &mut ElementIter) -> Option<Vec<Element>> {
                 })
                 .collect(),
         );
-    }
+    }  
+
+    match next {
+        Element::Tag(TagKind::Script) => {
+            while let Some(child) = it.next() {
+                if let Element::EndTag(TagKind::Script) = *child {
+                    return None;
+                }
+            }
+        }
+        _ => {}
+    };
 
     // Leave IgnoreTag alone, this is only used while stripping
     less_html::keep_unit_element!(IgnoreTag, next);
@@ -57,8 +68,8 @@ fn strip_page(input: &Path) -> Result<FlatHtml> {
 
 fn main() -> Result<()> {
     let args = std::env::args().collect::<Vec<_>>();
-    if args.len() != 2 {
-        println!("usage: swb [input]");
+    if args.len() < 2 {
+        println!("usage: swb [input] [--text]");
         std::process::exit(1);
     }
     let path = Path::new(&args[1]);
@@ -66,7 +77,13 @@ fn main() -> Result<()> {
     let output = compile(&input)?;
     let out_path = path.with_extension("swb");
     let mut file = File::create(&out_path)?;
-    let binary = output.binary().into_byte_buffer();
-    file.write(binary.as_slice())?;
+
+    if args.len() == 3 && args[2] == "--text" {
+        write!(&mut file, "{}", output)?;
+    } else {
+        let binary = output.binary().into_byte_buffer();
+        file.write(binary.as_slice())?;
+    }
+   
     Ok(())
 }
